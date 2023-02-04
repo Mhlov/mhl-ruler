@@ -1,7 +1,7 @@
-;mhl-vertical-ruler.scm
+;mhl-ruler.scm
 ;==============================================================================
 ;MHL-Ruler
-;Create a vertical proportionally divided ruler from the selection.
+;Create a proportionally divided ruler from the selection.
 ;Copyright (C) 2019 Melon (https://github.com/Mhlov)
 ;
 ; LICENSE
@@ -249,7 +249,7 @@
 (script-fu-register
   "mhl-main"
   _"<Image>/Script-Fu/MHL-Ruler"
-  "Creates a proportionally divided ruler from the selection"
+  "Create a proportionally divided ruler from the selection"
   "MHL <mhl@localhost>"
   "MHL"
   "2019"
