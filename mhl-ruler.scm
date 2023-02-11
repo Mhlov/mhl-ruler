@@ -74,7 +74,13 @@
                         parts
                         width-as-height
                         centered
-                        type)
+                        type
+                        scaling)
+
+  (define selection-height (- (nth 3 selection)
+                              (nth 1 selection)))
+  (define selection-width (- (nth 2 selection)
+                             (car selection)))
 
   (define layer-height 0)
   (define layer-width 0)
@@ -86,23 +92,21 @@
     ; then
     (begin
       (set! layer-height
-            (floor (/ (- (nth 3 selection)
-                         (nth 1 selection))
+            (floor (/ selection-height
                       parts)))
 
       (set! layer-width
             (if
               ; if layer-height < selection-width
               (and (= TRUE width-as-height)
-                   (< layer-height (- (nth 2 selection)
-                                      (car selection))))
+                   (< layer-height
+                      selection-width))
 
               ; then
               layer-height
 
               ;else
-              (- (nth 2 selection)
-                 (car selection)))))
+              selection-width)))
 
       ; else
       (if
@@ -112,23 +116,21 @@
         ;then
         (begin
           (set! layer-width
-            (floor (/ (- (nth 2 selection)
-                         (car selection))
+            (floor (/ selection-width
                       parts)))
 
           (set! layer-height
             (if
               ; if layer-width < selection-height
               (and (= TRUE width-as-height)
-                   (< layer-width (- (nth 3 selection)
-                                     (nth 1 selection))))
+                   (< layer-width
+                      selection-height))
 
               ; then
               layer-width
 
               ;else
-              (- (nth 3 selection)
-                 (nth 1 selection)))))))
+              selection-height)))))
 
   (define pos-x (if
                   (and (= TRUE centered)
@@ -190,7 +192,39 @@
                             (if (= 0 type)
                               ; then
                               (+ (cadr selection)
-                                 (* layer-height (- i 1)))))))))
+                                 (* layer-height (- i 1))))))))
+
+  ; Scale the group as needed
+  (if (and (= TRUE scaling)
+           (= 0 type)
+           (> selection-height
+              (* layer-height
+                 parts)))
+    ;if vertical and sel-h > group-h then
+    (begin
+      (gimp-layer-scale group
+                        layer-width
+                        selection-height
+                        TRUE)
+      (gimp-layer-set-offsets group
+                              pos-x
+                              (cadr selection)))
+
+    ;else
+    (if (and (= TRUE scaling)
+             (= 1 type)
+             (> selection-width
+                (* layer-width
+                   parts)))
+      ;if horizontal and sel-w > group-w then
+      (begin
+        (gimp-layer-scale group
+                         selection-width
+                         layer-height
+                         TRUE)
+        (gimp-layer-set-offsets group
+                                (car selection)
+                                pos-y)))))
 
 
 (define (mhl-main image
@@ -200,6 +234,7 @@
                   parts
                   width-as-height
                   centered
+                  scaling
                   opacity)
 
   (if
@@ -237,7 +272,8 @@
                       parts
                       width-as-height
                       centered
-                      type)
+                      type
+                      scaling)
 
       ; End undo group
       (gimp-image-undo-group-end image)
@@ -261,4 +297,5 @@
   SF-VALUE "Number of parts" "4"
   SF-TOGGLE "Width as height" TRUE
   SF-TOGGLE "Centered" TRUE
+  SF-TOGGLE "Scale as needed" TRUE
   SF-VALUE "Opacity" "50")
