@@ -75,7 +75,8 @@
                         width-as-height
                         centered
                         type
-                        scaling)
+                        scaling
+                        lines)
 
   (define selection-height (- (nth 3 selection)
                               (nth 1 selection)))
@@ -171,8 +172,16 @@
     (while (< i parts)
            (set! i (+ i 1))
            (mhl-add-layer group
-                          layer-width                                 ; width
-                          layer-height                                ; height
+                          (if (and (= TRUE lines) (= 1 type))         ; width
+                            ; if lines and horizontal type then
+                            1
+                            ; else
+                            layer-width)
+                          (if (and (= TRUE lines) (= 0 type))         ; height
+                            ; if lines and vertical type then
+                            1
+                            ; else
+                            layer-height)
                           (string-append "part " (number->string i))  ; name
                           (if (= TRUE (remainder i 2))                ; colour
                             (car colours)                           ; 1st-colour
@@ -193,6 +202,41 @@
                               ; then
                               (+ (cadr selection)
                                  (* layer-height (- i 1))))))))
+
+  ; add last line
+  (if (= TRUE lines)
+    ; then
+    (mhl-add-layer group
+                   (if (= 1 type)                                        ; width
+                     ; if horizontal type then
+                     1
+                     ; else
+                     layer-width)
+                   (if (= 0 type)                                        ; height
+                     ; if vertical type then
+                     1
+                     ; else
+                     layer-height)
+                   (string-append "part " (number->string (+ parts 1)))  ; name
+                   (if (= TRUE (remainder (+ parts 1) 2))                ; colour
+                     (car colours)                                       ; 1st-colour
+                     (cadr colours))                                     ; 2nd-colour
+                   (if (= 0 type)                                        ; pos-x
+                     ; if vertical then
+                     pos-x
+                     ; else if horizontal
+                     (if (= 1 type)
+                       ; then
+                       (+ (car selection)
+                          (- (* layer-width (- (+ parts 1) 1)) 1))))
+                   (if (= 1 type)                                        ; pos-y
+                     ; if horizontal then
+                     pos-y
+                     ; else if vertical
+                     (if (= 0 type)
+                       ; then
+                       (+ (cadr selection)
+                          (- (* layer-height (- (+ parts 1) 1)) 1))))))
 
   ; Scale the group as needed
   (if (and (= TRUE scaling)
@@ -226,7 +270,6 @@
                                 (car selection)
                                 pos-y)))))
 
-
 (define (mhl-main image
                   first-colour
                   second-colour
@@ -235,6 +278,7 @@
                   width-as-height
                   centered
                   scaling
+                  lines
                   opacity)
 
   (if
@@ -273,7 +317,8 @@
                       width-as-height
                       centered
                       type
-                      scaling)
+                      scaling
+                      lines)
 
       ; End undo group
       (gimp-image-undo-group-end image)
@@ -298,4 +343,5 @@
   SF-TOGGLE "Width as height" TRUE
   SF-TOGGLE "Centered" TRUE
   SF-TOGGLE "Scale as needed" TRUE
+  SF-TOGGLE "Divisions as lines" FALSE
   SF-VALUE "Opacity" "50")
