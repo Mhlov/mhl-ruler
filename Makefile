@@ -1,6 +1,6 @@
 CURRENT_DIR=$(shell pwd -P)
 FILE_NAME=mhl-ruler.scm
-TARGET_DIR=${HOME}/.config/GIMP/2.10/scripts
+TARGET_DIR=${HOME}/.config/GIMP/3.2/scripts
 
 TARGET_FILE=${TARGET_DIR}/${FILE_NAME}
 

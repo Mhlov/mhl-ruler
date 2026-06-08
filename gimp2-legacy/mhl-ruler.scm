@@ -2,7 +2,7 @@
 ;==============================================================================
 ;MHL-Ruler
 ;Create a proportionally divided ruler from the selection.
-;Copyright (C) 2019-2026 Melon (https://github.com/Mhlov)
+;Copyright (C) 2019 Melon (https://github.com/Mhlov)
 ;
 ; LICENSE
 ;
@@ -20,7 +20,7 @@
 ;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;
 ;==============================================================================
-;Tested on GIMP 3.2.4
+;Tested on GIMP 2.10.32
 
 
 (define (mhl-add-layer group
@@ -36,10 +36,10 @@
 
   ; create new layer
   (define layer (car (gimp-layer-new image
-                                     name
                                      width
                                      height
                                      RGB
+                                     name
                                      100
                                      LAYER-MODE-NORMAL)))
 
@@ -78,9 +78,9 @@
                         scaling
                         lines)
 
-  (define selection-height (- (list-ref selection 3)
-                              (list-ref selection 1)))
-  (define selection-width (- (list-ref selection 2)
+  (define selection-height (- (nth 3 selection)
+                              (nth 1 selection)))
+  (define selection-width (- (nth 2 selection)
                              (car selection)))
 
   (define layer-height 0)
@@ -137,12 +137,12 @@
                   (and (= TRUE centered)
                        (= TRUE width-as-height)
                        (< layer-width
-                          (- (list-ref selection 2)
+                          (- (nth 2 selection)
                              (car selection))))
                   ; then
                   (begin
                     (+ (car selection)                  ; selection x position
-                       (round (/ (- (- (list-ref selection 2)
+                       (round (/ (- (- (nth 2 selection)
                                        (car selection)) ; selection-w
                                     layer-width)        ; selection-w - layer-w
                                  2))))
@@ -154,18 +154,18 @@
                   (and (= TRUE centered)
                        (= TRUE width-as-height)
                        (< layer-height
-                          (- (list-ref selection 3)
-                             (list-ref selection 1))))
+                          (- (nth 3 selection)
+                             (nth 1 selection))))
                   ;then
                   (begin
-                    (+ (list-ref selection 1)                    ; selection y pos
-                       (round (/ (- (- (list-ref selection 3)
-                                       (list-ref selection 1))   ; selection-h
+                    (+ (nth 1 selection)                    ; selection y pos
+                       (round (/ (- (- (nth 3 selection)
+                                       (nth 1 selection))   ; selection-h
                                     layer-height)           ; sel-h - layer-h
                                  2))))
                   ;else
                   (begin
-                    (list-ref selection 1))))
+                    (nth 1 selection))))
 
   (let*
     ( (i 0) )
@@ -270,25 +270,23 @@
                                 (car selection)
                                 pos-y)))))
 
-(define (mhl-ruler image
+(define (mhl-main image
                   first-colour
                   second-colour
                   type
-                  str_parts
+                  parts
                   width-as-height
                   centered
                   scaling
                   lines
-                  str_opacity)
+                  opacity)
 
-  (define parts (string->number str_parts))
-  (define opacity (string->number str_opacity))
   (if
     (= TRUE (car (gimp-selection-is-empty image)))
 
     ; then
     (begin
-      (gimp-message "This script won't work without a selection"))
+      (gimp-message "That script doesn't work without selection"))
 
     ; else
     (begin
@@ -296,10 +294,10 @@
       (gimp-image-undo-group-start image)
 
       ; create layer group
-      (define group (car (gimp-group-layer-new image
-                                               (string-append str_parts
-                                                              " parts"))))
-
+      (define group (car (gimp-layer-group-new image)))
+      (gimp-layer-set-name group
+                           (string-append (number->string parts)
+                                          " parts"))
       (gimp-image-insert-layer image
                                group
                                0
@@ -330,8 +328,8 @@
 
 
 (script-fu-register
-  "mhl-ruler"
-  "Ruler"
+  "mhl-main"
+  _"<Image>/Script-Fu/MHL-Ruler"
   "Create a proportionally divided ruler from the selection"
   "MHL <mhl@localhost>"
   "MHL"
@@ -341,12 +339,9 @@
   SF-COLOR "First colour" '(0 87 184)
   SF-COLOR "Second colour" '(255 215 0)
   SF-OPTION "Type" '("Vertical" "Horizontal")
-  SF-STRING "Number of parts" "4"
+  SF-VALUE "Number of parts" "4"
   SF-TOGGLE "Width as height" TRUE
   SF-TOGGLE "Centered" TRUE
   SF-TOGGLE "Scale as needed" TRUE
   SF-TOGGLE "Divisions as lines" FALSE
-  SF-STRING "Opacity" "50")
-
-(script-fu-menu-register "mhl-ruler"
-                         "<Image>/Filters/MHL")
+  SF-VALUE "Opacity" "50")
